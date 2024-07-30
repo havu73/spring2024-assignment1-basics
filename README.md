@@ -1,6 +1,6 @@
 # CS336 Spring 2024 Assignment 1: Basics
 In this repository, I am trying to do the first homework for course [CS336 at Stanford Spring 2024](https://stanford-cs336.github.io/spring2024/), in which I get to learn to implement a large language model ***from scatch***. I do this course work in my free time to catch up with the field and sharpen my learning. I owe lots of thanks to the creators of the course for designing such comprehensive homework, and making it available for the general public. Even though I am not too far into the homework yet, I have had a lot of fun and the learning is invaluable. Here is what I have done so far:
-- [x] Set up the enviroment on the computer cluster
+- [x] Set up the environment on the computer cluster
 - [x] Implemeted the BPETrainer class and passed unit test: added ```./BPETrainer``` and ```tests/test_BPETrainer/``` folders
 - [x] Implemented the Tokenizer class and passed unit test: added ```./Tokenizer``` and ```tests/test_Tokenizer/``` folders
 - [ ] Transformer language model. Implement
