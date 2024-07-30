@@ -145,6 +145,9 @@ def test_roundtrip_single_unicode_character():
         merges_path=MERGES_PATH,
     )
     test_string = "🙃"
+    # import pdb; pdb.set_trace()
+    print(test_string.encode())
+    print(tokenizer.vocab[8582], tokenizer.vocab[247], tokenizer.vocab[225])
     encoded_ids = tokenizer.encode(test_string)
     decoded_string = tokenizer.decode(encoded_ids)
     assert test_string == decoded_string
@@ -159,6 +162,7 @@ def test_single_unicode_character_matches_tiktoken():
     test_string = "🙃"
 
     reference_ids = reference_tokenizer.encode(test_string)
+    print('reference_ids:', reference_ids)
     ids = tokenizer.encode(test_string)
     assert ids == reference_ids
 
@@ -230,7 +234,6 @@ def test_roundtrip_unicode_string_with_special_tokens():
     tokenized_string = [tokenizer.decode([x]) for x in encoded_ids]
     # Ensure the special <|endoftext|> token is preserved
     assert tokenized_string.count("<|endoftext|>") == 3
-
     decoded_string = tokenizer.decode(encoded_ids)
     assert test_string == decoded_string
 

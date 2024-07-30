@@ -6,7 +6,10 @@ from typing import IO, BinaryIO, Iterable, Optional, Type
 
 import numpy.typing as npt
 import torch
-
+import sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from BPETrainer.bpe_trainer import BPETrainer
+from Tokenizer.tokenizer import Tokenizer
 
 def run_positionwise_feedforward(
     d_model: int,
@@ -536,7 +539,8 @@ def get_tokenizer(
     Returns:
         A BPE tokenizer that uses the provided vocab, merges, and special tokens.
     """
-    raise NotImplementedError
+    tokenizer = Tokenizer(vocab, merges, special_tokens)
+    return tokenizer
 
 
 def run_train_bpe(
@@ -569,4 +573,17 @@ def run_train_bpe(
                 representing that <token1> was merged with <token2>.
                 Merges are ordered by order of creation.
     """
-    raise NotImplementedError
+    # read in the text file
+    with open(input_path, "r") as f:
+        text = f.read()
+    # pre-tokenize the text file
+    import regex as re
+    PAT = r"""'(?:[sdmt]|ll|ve|re)| ?\p{L}+| ?\p{N}+| ?[^\s\p{L}\p{N}]+|\s+(?!\S)|\s+"""
+    pretokens = re.findall(PAT, text)
+    # pretokens = text.split()
+    # train the BPE tokenizer
+    bpe_train = BPETrainer(pretokens=pretokens, vocab_size=vocab_size, special_tokens=special_tokens)
+    vocab, merges = bpe_train.train()
+    return vocab, merges
+
+

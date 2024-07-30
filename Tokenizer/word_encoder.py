@@ -5,8 +5,8 @@ import regex as re
 
 class WordEncoder:
     def __init__(self, word: str, reverse_vocab: Dict[bytes, int], reverse_merges: Dict[bytes, List[Tuple[bytes, int]]]):
-        self.word = word
-        self.byte_list = [bytes([c]) for c in word.encode()]
+        self.word = word.encode('utf-8')
+        self.byte_list = [bytes([c]) for c in word.encode()]  # each byte in the word is an element, even though a character can be represented by multiple bytes
         self.reverse_merges = reverse_merges  # Dict[bytes, List[Tuple[bytes, int]]] --> for each byte as key of the first b, the list of bytes that it merges to
         self.reverse_vocab = reverse_vocab  # Dict[bytes, int] --> for each byte, the integer it corresponds to there is only one-to-one mapping between bytes and integers
         self.possible_merges, self.candidate_merge, self.min_merge_idx = self.get_possble_merges()
@@ -46,12 +46,20 @@ class WordEncoder:
         result = re.split(dividers, text)
         print(result)
         >>>['Hello, world', " This is an example; let's split it by ", ' rules', '', 'is', '.']
+        This function should also work for bytes!!!!! it took me so long to get it to work on sequence of bytes like it work for a string
         '''
         self.merged_byte_list.append(candidate_merge[0] + candidate_merge[1])  # merge the bytes
-        PAT = r'(?:' + '|'.join([re.escape(b.decode()) for b in self.merged_byte_list[::-1]]) + ')'  # this is needed because want to divide the word based on dividers of the merged bytes such that newest merged bytes are presented first,
+        PAT = rb'(?:' + b'|'.join([re.escape(b) for b in self.merged_byte_list[::-1]]) + rb')'  # this is needed because want to divide the word based on dividers of the merged bytes such that newest merged bytes are presented first,
         # newer merges include the older merges as substring.
-        byte_list = re.split(PAT, self.word)
-        self.byte_list = [bytes([c]) for c in byte_list if c != '']  # due to the split, there can be empty strings, we ignore them
+        in_between_byte_list = re.split(PAT, self.word)
+        merge_byte_list = re.findall(PAT, self.word)
+        self.byte_list = []  # due to the split, there can be empty strings, we ignore them
+        assert len(in_between_byte_list) == len(merge_byte_list) + 1
+        for b_idx, bs in enumerate(in_between_byte_list):
+            if bs != '':
+                self.byte_list.extend([bytes([b]) for b in bs])
+            if b_idx < len(merge_byte_list):
+                self.byte_list.append(merge_byte_list[b_idx])
         return
 
     def _convert_byte_to_int(self)-> List[int]:
@@ -61,7 +69,9 @@ class WordEncoder:
         result = []
         for b in self.byte_list:
             if b not in self.reverse_vocab:
-                raise ValueError('Byte not in reverse_vocab')
+                print(b)
+                # print(self.reverse_vocab)
+                raise ValueError(f'Byte not in reverse_vocab {b}')
             result.append(self.reverse_vocab[b])
         return result
 
@@ -70,7 +80,7 @@ class WordEncoder:
         Encode the word using the merges
         '''
         while self.candidate_merge is not None:
-            self.merge(self.min_merge_idx, self.candidate_merge)  # update self.byte_list and self.merged_byte_list
+            self.merge(self.candidate_merge)  # update self.byte_list and self.merged_byte_list
             self.possible_merges, self.candidate_merge, self.min_merge_idx = self.get_possble_merges()
         # after we are done merging the bytes in the word, we will encode it
         return self._convert_byte_to_int()
