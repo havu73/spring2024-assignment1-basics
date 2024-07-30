@@ -3,7 +3,10 @@
 For a full description of the assignment, see the assignment handout at
 [cs336_spring2024_assignment1_basics.pdf](./cs336_spring2024_assignment1_basics.pdf)
 
-In this repository, I am trying to do the first homework for course CS336 at Stanford, in which I get to learn to implement a large language model from scatch. I do this course work in my free time to catch up with the field and keep my learning capacity sharper.
+In this repository, I am trying to do the first homework for course CS336 at Stanford, in which I get to learn to implement a large language model from scatch. I owe lots of thanks to the creators of the course for designing such comprehensive homework, and making it available for the general public. I do this course work in my free time to catch up with the field and keep my learning capacity sharper. Here is what I have done so far:
+- [x] Set up the enviroment on the computer cluster
+- [x] Implemeted the BPETrainer class and passed unit test
+- [x] Implemented the Tokenizer class and passed unit test
 
 ## Setup
 
