@@ -4,10 +4,10 @@ In this repository, I am trying to do the first homework for course [CS336 at St
 - [x] Implemeted the BPETrainer class and passed unit test: added ```./BPETrainer``` and ```tests/test_BPETrainer/``` folders
 - [x] Implemented the Tokenizer class and passed unit test: added ```./Tokenizer``` and ```tests/test_Tokenizer/``` folders
 - [ ] Transformer language model. Implement
-  - [ ] Root mean square layer normalization
-  - [ ] Position-wise Feed-Forward Networks
-  - [ ] Softmax
-  - [ ] Scaled dot product attention
+  - [x] Root mean square layer normalization
+  - [x] Position-wise Feed-Forward Networks
+  - [x] Softmax
+  - [x] Scaled dot product attention
   - [ ] Multi-head self-attention
   - [ ] Transformer block
   - [ ] The full Transformer model
