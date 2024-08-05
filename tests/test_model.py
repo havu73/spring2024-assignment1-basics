@@ -91,6 +91,7 @@ def test_multihead_self_attention():
         weights=reference_weights,
         in_features=in_features,
     )
+    import pdb; pdb.set_trace()
     numpy.testing.assert_allclose(
         actual_output.detach().numpy(), expected_output.detach().numpy(), atol=1e-6
     )

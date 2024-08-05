@@ -48,6 +48,7 @@ def test_train_bpe():
             vocab_size=500,
             special_tokens=["<|endoftext|>"],
         )
+    assert merges == reference_merges
     # Compare the vocab to the expected output vocab
     with open(reference_vocab_path) as f:
         gpt2_reference_vocab = json.load(f)

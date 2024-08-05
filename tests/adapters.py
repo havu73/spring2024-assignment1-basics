@@ -46,7 +46,11 @@ def run_positionwise_feedforward(
     # You can also manually assign the weights
     # my_ffn.w1.weight.data = weights["w1.weight"]
     # my_ffn.w2.weight.data = weights["w2.weight"]
-    raise NotImplementedError
+    from Transformer.FFN import FFN
+    ffn = FFN(d_model = d_model, d_ff= d_ff)
+    ffn.load_state_dict(weights)
+    output = ffn(in_features)
+    return output
 
 
 def run_scaled_dot_product_attention(
@@ -88,7 +92,10 @@ def run_scaled_dot_product_attention(
         with the output of running your scaled dot product attention
         implementation with the provided key, query, and value tensors.
     """
-    raise NotImplementedError
+    from Transformer.attention import ScaledDotProductAttention
+    scaled_dot_product_attention = ScaledDotProductAttention(K.shape[-1], V.shape[-1])
+    output = scaled_dot_product_attention(Q, K, V, mask)
+    return output
 
 
 def run_multihead_self_attention(
@@ -138,7 +145,13 @@ def run_multihead_self_attention(
         torch.FloatTensor with the output of running your optimized, batched multi-headed attention
         implementation with the given QKV projection weights and input features.
     """
-    raise NotImplementedError
+    from Transformer.attention import MultiHead
+    d_k = weights['q_heads.0.weight'].shape[0]
+    d_v = weights['v_heads.0.weight'].shape[0]
+    multihead = MultiHead(d_model, num_heads, d_k, d_v)
+    multihead.load_state_dict(weights)  # load in WQ, WK, WV, WO
+    output = multihead(in_features)
+    return output
 
 
 def run_transformer_block(
@@ -334,7 +347,10 @@ def run_rmsnorm(
         FloatTensor of with the same shape as `in_features` with the output of running
         RMSNorm of the `in_features`.
     """
-    raise NotImplementedError
+    from Transformer.RmsNorm import RMSNorm
+    rmsnorm = RMSNorm(d_model, eps)
+    output = rmsnorm(in_features, weights['weight'])
+    return output
 
 
 def run_gelu(in_features: torch.FloatTensor) -> torch.FloatTensor:
@@ -349,7 +365,9 @@ def run_gelu(in_features: torch.FloatTensor) -> torch.FloatTensor:
         FloatTensor of with the same shape as `in_features` with the output of applying
         GELU to each element.
     """
-    raise NotImplementedError
+    from Transformer.GELU import GELU
+    output = GELU(in_features)
+    return output
 
 
 def run_get_batch(
@@ -393,7 +411,9 @@ def run_softmax(in_features: torch.FloatTensor, dim: int) -> torch.FloatTensor:
         FloatTensor of with the same shape as `in_features` with the output of
         softmax normalizing the specified `dim`.
     """
-    raise NotImplementedError
+    from Transformer.activation import softmax
+    output = softmax(in_features, dim)
+    return output
 
 
 def run_cross_entropy(inputs: torch.FloatTensor, targets: torch.LongTensor):
