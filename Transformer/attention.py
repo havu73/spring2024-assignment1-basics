@@ -37,6 +37,72 @@ class ScaledDotProductAttention(nn.Module):
         return torch.matmul(attention, V)
 
 
+import torch
+import torch.nn.functional as F
+import numpy as np
+
+# Example implementation of multi-head self-attention (simplified)
+class MultiHeadSelfAttention(torch.nn.Module):
+    def __init__(self, embed_dim, num_heads):
+        super(MultiHeadSelfAttention, self).__init__()
+        self.embed_dim = embed_dim
+        self.num_heads = num_heads
+        self.head_dim = embed_dim // num_heads
+
+        assert self.head_dim * num_heads == embed_dim, "embed_dim must be divisible by num_heads"
+
+        self.query = torch.nn.Linear(embed_dim, embed_dim, bias=False)
+        self.key = torch.nn.Linear(embed_dim, embed_dim, bias=False)
+        self.value = torch.nn.Linear(embed_dim, embed_dim, bias=False)
+        self.out = torch.nn.Linear(embed_dim, embed_dim, bias=False)
+
+    def forward(self, x):
+        batch_size, seq_length, embed_dim = x.size()
+
+        # Linear projections
+        Q = self.query(x)
+        K = self.key(x)
+        V = self.value(x)
+        # Split into multiple heads
+        Q = Q.view(batch_size, seq_length, self.num_heads, self.head_dim)
+        K = K.view(batch_size, seq_length, self.num_heads, self.head_dim)
+        V = V.view(batch_size, seq_length, self.num_heads, self.head_dim)
+        # Transpose to get dimensions [batch_size, num_heads, seq_length, head_dim]
+        Q = Q.transpose(1, 2)
+        K = K.transpose(1, 2)
+        V = V.transpose(1, 2)
+        # Scaled dot-product attention
+        scores = torch.matmul(Q, K.transpose(-2, -1)) / np.sqrt(self.head_dim)
+        attn_weights = F.softmax(scores, dim=-1)
+        attn_output = torch.matmul(attn_weights, V)
+        # Concatenate heads
+        attn_output = attn_output.transpose(1, 2).contiguous().view(batch_size, seq_length, embed_dim)
+        # Final linear layer
+        output = self.out(attn_output)
+        return output
+
+    def load_state_dict(self, state_dict: dict):
+        '''
+        :param state_dict: dict: the state dictionary
+        '''
+        # WQ should be concatnative of all state_dict['q_heads.i.weight'] for i in range(num_heads)
+        # each state_dict['q_heads.i.weight'] has shape (d_k, d_model)
+        WQ = torch.cat([state_dict[f"q_heads.{i}.weight"] for i in range(self.num_heads)], dim=0)  # (d_k*num_head, d_model)
+        self.query.weight.data = WQ  # (d_k*num_head, d_model) which is (d_output, d_input) in nn.Linear
+        # WK should be concatnative of all state_dict['k_heads.i.weight'] for i in range(num_heads)
+        # each state_dict['k_heads.i.weight'] has shape (d_k, d_model)
+        WK = torch.cat([state_dict[f"k_heads.{i}.weight"] for i in range(self.num_heads)], dim=0)
+        self.key.weight.data = WK
+        # WV should be concatnative of all state_dict['v_heads.i.weight'] for i in range(num_heads)
+        # each state_dict['v_heads.i.weight'] has shape (d_v, d_model)
+        WV = torch.cat([state_dict[f"v_heads.{i}.weight"] for i in range(self.num_heads)], dim=0)
+        self.value.weight.data = WV
+        # WO from state_dict['o.weight'] (d_value * num_heads, d_model)
+        W0 = state_dict["output_proj.weight"]
+        self.out.weight.data = W0.T  # (d_model, d_value * num_heads)
+        # import pdb; pdb.set_trace()
+        return self
+
 class MultiHead(nn.Module):
     def __init__(self, d_model: int, num_heads: int, d_k: int, d_v: int):
         '''
@@ -87,7 +153,8 @@ class MultiHead(nn.Module):
         # each state_dict['v_heads.i.weight'] has shape (d_v, d_model)
         WV = torch.cat([state_dict[f"v_heads.{i}.weight"] for i in range(self.num_heads)], dim=0)
         self.WV.weight.data = WV
-        # WO from state_dict['o.weight'] (d_model, d_value * num_heads)
+        # WO from state_dict['o.weight'] (d_value * num_heads, d_model)
         W0 = state_dict["output_proj.weight"]
-        self.WO.weight.data = W0
+        self.WO.weight.data = W0  # (d_model, d_value * num_heads)
+        # import pdb; pdb.set_trace()
         return self
