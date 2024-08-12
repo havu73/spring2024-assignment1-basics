@@ -8,7 +8,7 @@ In this repository, I am trying to do the first homework for course [CS336 at St
   - [x] Position-wise Feed-Forward Networks
   - [x] Softmax
   - [x] Scaled dot product attention
-  - [ ] Multi-head self-attention
+  - [x] Multi-head self-attention: the provided test by the course instructor is not correct! I made my own test to compare my implementation's result with the output of ```torch.nn.MultiheadAttention```, ```pytest -k test_multihead_self_attention_ha```. This unit testing really screwed me up so much time!
   - [ ] Transformer block
   - [ ] The full Transformer model
   - [ ] Accounting of memory and time complexity for Transformer model
