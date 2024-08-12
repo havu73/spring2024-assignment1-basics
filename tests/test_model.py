@@ -73,28 +73,41 @@ def test_4d_scaled_dot_product_attention():
     )
 
 
-# def test_multihead_self_attention():
-#     reference_weights = torch.load(
-#         FIXTURES_PATH / "unbatched_multihead_self_attention_weights.pt"
-#     )
-#     in_features = torch.load(FIXTURES_PATH / "in_features.pt")
-#     expected_output = torch.load(
-#         FIXTURES_PATH / "unbatched_multihead_self_attention_expected_output.pt"
-#     )
-#     d_model = 64
-#     num_heads = 2
-#     attn_pdrop = 0.0
-#     import pdb; pdb.set_trace()
-#     actual_output = run_multihead_self_attention(
-#         d_model=d_model,
-#         num_heads=num_heads,
-#         attn_pdrop=attn_pdrop,
-#         weights=reference_weights,
-#         in_features=in_features,
-#     )
-#     numpy.testing.assert_allclose(
-#         actual_output.detach().numpy(), expected_output.detach().numpy(), atol=1e-6
-#     )
+def test_multihead_self_attention():
+    reference_weights = torch.load(
+        FIXTURES_PATH / "unbatched_multihead_self_attention_weights.pt"
+    )
+    in_features = torch.load(FIXTURES_PATH / "in_features.pt")
+    expected_output = torch.load(
+        FIXTURES_PATH / "unbatched_multihead_self_attention_expected_output.pt"
+    )
+    d_model = 64
+    num_heads = 2
+    d_k = d_model // num_heads
+    attn_pdrop = 0.0
+    actual_output = run_multihead_self_attention(
+        d_model=d_model,
+        num_heads=num_heads,
+        attn_pdrop=attn_pdrop,
+        weights=reference_weights,
+        in_features=in_features,
+    )
+    # get the output from torch
+    multihead_attn = torch.nn.MultiheadAttention(d_model, num_heads, batch_first=True, bias=False)
+    new_in_proj_weight = torch.ones((3 * d_model, d_model))  # (3 * d_model) x d_model
+    for i in range(num_heads):
+        new_in_proj_weight[i * d_k : (i + 1) * d_k] = reference_weights[f"q_heads.{i}.weight"]
+        new_in_proj_weight[(num_heads + i) * d_k : (num_heads + i + 1) * d_k] = reference_weights[f"k_heads.{i}.weight"]
+        new_in_proj_weight[(2 * num_heads + i) * d_k : (2 * num_heads + i + 1) * d_k] = reference_weights[f"v_heads.{i}.weight"]
+    new_out_proj_weight = reference_weights["output_proj.weight"]
+    # now assign the new weights to the multi-head attention layer
+    multihead_attn.in_proj_weight.data = new_in_proj_weight
+    multihead_attn.out_proj.weight.data = new_out_proj_weight
+    # get the output from the multi-head attention layer
+    expected_output, _ = multihead_attn(in_features, in_features, in_features)
+    numpy.testing.assert_allclose(
+        actual_output.detach().numpy(), expected_output.detach().numpy(), atol=1e-6
+    )
 
 def test_multihead_self_attention_ha():
     torch.manual_seed(42)

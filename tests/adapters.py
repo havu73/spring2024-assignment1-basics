@@ -145,7 +145,7 @@ def run_multihead_self_attention(
         torch.FloatTensor with the output of running your optimized, batched multi-headed attention
         implementation with the given QKV projection weights and input features.
     """
-    from Transformer.attention import MultiHeadSelfAttention, MultiHead
+    from Transformer.attention import MultiHead
     d_k = weights['q_heads.0.weight'].shape[0]
     d_v = weights['v_heads.0.weight'].shape[0]
     # # import pdb; pdb.set_trace()
@@ -190,7 +190,7 @@ def run_transformer_block(
             - `attn.q_proj.weight`
                 The query projections for all `num_heads` attention heads.
                 Shape is (num_heads * (d_model / num_heads), d_model).
-                The rows are ordered by matrices of shape (num_heads, d_k),
+                The rows are ordered by matrices of shape (num_heads, d_k) --> Ha's notes: should be (d_k, d_model)
                 so `attn.q_proj.weight == torch.cat([q_heads.0.weight, ..., q_heads.N.weight], dim=0)`.
             - `attn.k_proj.weight`
                 The key projections for all `num_heads` attention heads.
@@ -227,7 +227,11 @@ def run_transformer_block(
         FloatTensor of shape (batch_size, sequence_length, d_model) with the output of
         running the Transformer block on the input features.
     """
-    raise NotImplementedError
+    from Transformer.Transformer import TransformerBlock
+    block = TransformerBlock(d_model, num_heads, d_ff, attn_pdrop, residual_pdrop)
+    block.load_state_dict(weights)
+    output = block(in_features)
+    return output
 
 
 def run_transformer_lm(
@@ -320,7 +324,9 @@ def run_transformer_lm(
         FloatTensor of shape (batch size, sequence_length, vocab_size) with the predicted unnormalized
         next-word distribution for each token.
     """
+    from Transformer.Transformer import TransformerBlock
     raise NotImplementedError
+
 
 
 def run_rmsnorm(

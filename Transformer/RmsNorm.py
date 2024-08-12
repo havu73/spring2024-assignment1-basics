@@ -34,3 +34,10 @@ class RMSNorm(nn.Module):
             return a/ rms.unsqueeze(-1) * weights
         else:
             return a/ rms.unsqueeze(-1) * self.g
+
+    def load_fixed_gain(self, weights: torch.Tensor):
+        '''
+        :param weights: torch.Tensor: the fixed weights
+        '''
+        self.g.data = weights['g']
+        return self
