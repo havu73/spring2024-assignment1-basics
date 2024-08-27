@@ -14,7 +14,7 @@ In this repository, I am trying to do the first homework for course [CS336 at St
   - [x] Accounting of memory and time complexity for Transformer model. Detailed accounting is logged within the code. In general, GPT-2 XL model needs ~ 107MB/layer and ~ 27 Billions FLOPs/layer. If context length beccomes 16,384 then the model needs ~ 2 Trillions FLOPs/layer.
 - [ ] Optimizer Implementations:
   - [x] Cross-entropy loss
-  - [ ] Stochastic Gradient Descent Optimizer: ```__init__```, ```step``` functions
+  - [x] Stochastic Gradient Descent Optimizer: ```__init__```, ```step``` functions
   - [ ] AdamW Optimizer: ```__init__```, ```step``` functions
   - [ ] Accounting of memory and time complexity for AdamW
   - [ ] Cosine learning rate scheduler with warm-up
