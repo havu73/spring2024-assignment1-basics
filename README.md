@@ -15,7 +15,7 @@ In this repository, I am trying to do the first homework for course [CS336 at St
 - [ ] Optimizer Implementations:
   - [x] Cross-entropy loss
   - [x] Stochastic Gradient Descent Optimizer: ```__init__```, ```step``` functions
-  - [ ] AdamW Optimizer: ```__init__```, ```step``` functions
+  - [x] AdamW Optimizer: ```__init__```, ```step``` functions: passed!
   - [ ] Accounting of memory and time complexity for AdamW
   - [ ] Cosine learning rate scheduler with warm-up
   - [ ] Gradient clipping
