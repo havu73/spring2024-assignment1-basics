@@ -68,7 +68,7 @@ class TransformerBlock(nn.Module):
         y = self.rmsnorm2(x_hat)  # (bs1,..., bsN, seq_len, d_model)  --> normalize by the last dimension
         y = self.ffn(y)  # (bs1,..., bsN, seq_len, d_model)
         y = self.residual_dropout(y) # (bs1,..., bsN, seq_len, d_model)
-        y = y + x_hat
+        y = y + x_hat # (bs1,..., bsN, seq_len, d_model)
         return y
 
 
