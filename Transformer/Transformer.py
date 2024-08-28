@@ -12,7 +12,7 @@ Model accounting:
 - multiheadattention (no bias): 3 * d_model * d_model 
 - FFN: 2 * d_model * d_ff
 In total: summing all the parameters above * 4byte per parameter --> ~ 107 MB
-(112,652,800 parameters in total, without the bias terms)
+(112,652,800 parameters in total, without the bias terms) FOR ONE LAYER of transformer
 
 How many FLOP operations are needed for the forward pass of the model?
 - rmsnorm1: 3* d_model: squaring a_i, adding a_i's, multiplying a_i * g_i
@@ -22,6 +22,8 @@ then, Attention(Q,K,V): 2 * seq_len * seq_len * d_model (for QK^T)
 softmax(QK^T): 2 * seq_len * seq_len: getting the denom and also dividing each entry of seq_len*seq_len matrix by the appropriate denom
 then, QK^T * V: 2 * seq_len * seq_len * d_model (for QK^T * V)
 Given the specification of GPT-2XL, this will need: 22,439,526,400 FLOPs for just the matrix multiplications FOR ONE LAYER
+- FFN: 2 * seq_len* d_model * dff + 2 * seq_len * dff * d_model: for each x of seq_len multiply by W1, then W2. Each matrix*matrix multiplication costs 2*d_model*d_ff opeations
+- FC to convert from d_model to num_tokens multiply (seq_len, d_model) by (d_model, num_tokens): 2 * d_model * num_tokens * seq_len
 If seq_len becomes 16384: 1,969,645,158,400 ~ 2 Trillion FLOPs FOR ONE LAYER
 '''
 

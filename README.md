@@ -11,12 +11,22 @@ In this repository, I am trying to do the first homework for course [CS336 at St
   - [x] Multi-head self-attention: the provided test by the course instructor is not correct! I made my own test to compare my implementation's result with the output of ```torch.nn.MultiheadAttention```, ```pytest -k test_multihead_self_attention_ha```. This unit testing really screwed me up so much time!
   - [x] Transformer block: failed the unit test but I am pretty sure the test by the course instructor is not correct. The test basically provides input, output, weights and compared their output to my output. However,  the Multi-head self-attention's test is not correct (my implementation was correct if compared to ```torch.nn.MultiHeadAttention``` output but failed the course instructors' provided test). Therefore, it is not surprising that my implementation of the Transformer block failed the provided test. I am confident that my implementation is correct, and due to time limit, will move on.
   - [x] The full Transformer model:  Did not pass the provided test, due to the same reasons outlind right above.
-  - [x] Accounting of memory and time complexity for Transformer model. Detailed accounting is logged within the code. In general, GPT-2 XL model needs ~ 107MB/layer and ~ 27 Billions FLOPs/layer. If context length beccomes 16,384 then the model needs ~ 2 Trillions FLOPs/layer.
+  - [x] Accounting of memory and time complexity for Transformer model. Detailed accounting is logged within the code. In general, GPT-2 XL model needs ~ 107MB/layer and ~ 27 Billions FLOPs/layer. If context length beccomes 16,384 then the model needs ~ 57 billions FLOPs/layer. All these numbers are for ONE sample (of length ```seq_len```) and ONE layer.
 - [ ] Optimizer Implementations:
   - [x] Cross-entropy loss
   - [x] Stochastic Gradient Descent Optimizer: ```__init__```, ```step``` functions
   - [x] AdamW Optimizer: ```__init__```, ```step``` functions: passed!
-  - [ ] Accounting of memory and time complexity for AdamW
+  - [x] Accounting of memory and time complexity for AdamW:
+    - It takes ~12.8GB of memory to store the states of the AdamW optimizer for GPT-2 XL model. This number does not take into account the space needed to calculate the loss function and gradients (though I took into acount the space to store the gradient itself, not the space to calculate the gradient).
+    - Space per batch of size 1 to calculate the loss function: ~ 0.19 GB
+    - Space per batch of size 1 to calculate the soft-maxed output probabilities: ~ 0.19 GB
+    - Space per batch of size 1 to store the all the components of one forward pass: ~ 0.69 GB (It may be smaller, but I am assuming I have to memorize the intermediate results of each step along the forward pass)
+    - If I have 80GB of memory, I can train with batch size of: ~76 (I maybe wrong, got a bit confused by the question!). But, if ```loss.backward()``` takes twice as much memory as ```optimizer.step()```, then I can probably train with batch size of 47
+    - FLOPS to run one AdamW step: ~ 14 Billions
+    - FLOPS to run one forward pass: ~ 3.2E12 
+    - FLOPS to run one backward pass: ~6.4E12
+    - FLOPs to train all the model with given batch size and num epochs: 3.9E21 FLOPs
+    - If I am still correct, it takes 488 days to train the model given a single A100 GPU.
   - [ ] Cosine learning rate scheduler with warm-up
   - [ ] Gradient clipping
 - [ ] Training loop. Implement

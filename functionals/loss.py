@@ -2,8 +2,8 @@ import torch
 
 def cross_entropy_ind_points(inputs: torch.Tensor, targets: torch.Tensor) -> torch.Tensor:
     """
-    :param inputs: torch.Tensor: the input tensor of shape (bs1, ..., bsN, d)
-    :param targets: torch.Tensor: the target tensor of shape (bs1,...,bsN) --> index of the correct class
+    :param inputs: torch.Tensor: the input tensor of shape (bs1, ..., seq_len, d)
+    :param targets: torch.Tensor: the target tensor of shape (bs1,...,seq_len) --> index of the correct class
     :return: torch.Tensor: the cross-entropy loss, implemented from scratch
     """
     inputs = inputs - inputs.max(dim=-1, keepdim=True).values
@@ -16,8 +16,8 @@ def cross_entropy_ind_points(inputs: torch.Tensor, targets: torch.Tensor) -> tor
 
 def cross_entropy(inputs:torch.Tensor, targets:torch.Tensor) -> torch.Tensor:
     '''
-    :param inputs: torch.Tensor: the input tensor of shape (bs1, ..., bsN, d)
-    :param targets: torch.Tensor: the target tensor of shape (bs1,...,bsN) --> index of the correct class
+    :param inputs: torch.Tensor: the input tensor of shape (bs1, ..., seq_len, d)
+    :param targets: torch.Tensor: the target tensor of shape (bs1,...,seq_len) --> index of the correct class
     :return: torch.Tensor: the cross-entropy loss, implemented from scratch, average across all datapoints
     '''
     return cross_entropy_ind_points(inputs, targets).mean()
