@@ -581,6 +581,21 @@ def get_tokenizer(
     tokenizer = Tokenizer(vocab, merges, special_tokens)
     return tokenizer
 
+def get_tokenizer_from_files(vocab_path: str | os.PathLike, merges_path: str | os.PathLike):
+    """Given paths to a vocabulary and merges file, return a BPE tokenizer
+    that uses the provided vocab and merges.
+
+    Args:
+        vocab_path: str | os.PathLike
+            Path to the tokenizer vocabulary file.
+        merges_path: str | os.PathLike
+            Path to the tokenizer merges file.
+
+    Returns:
+        A BPE tokenizer that uses the provided vocab and merges.
+    """
+    tokenizer = Tokenizer.load(vocab_path, merges_path)
+    return tokenizer
 
 def run_train_bpe(
     input_path: str | os.PathLike,

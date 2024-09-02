@@ -3,6 +3,7 @@ In this repository, I am trying to do the first homework for course [CS336 at St
 - [x] Set up the environment on the computer cluster
 - [x] Implemeted the BPETrainer class and passed unit test: added ```./BPETrainer``` and ```tests/test_BPETrainer/``` folders
 - [x] Implemented the Tokenizer class and passed unit test: added ```./Tokenizer``` and ```tests/test_Tokenizer/``` folders
+- [x] Trained BPETraner for TinyStories dataset
 - [x] Transformer language model. All code for this part is in the ```./Transformer``` folder. Implemented: 
   - [x] Root mean square layer normalization
   - [x] Position-wise Feed-Forward Networks

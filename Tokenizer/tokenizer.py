@@ -72,7 +72,7 @@ class Tokenizer:
         f = open(vocab_fn, 'r')
         data = json.load(f)
         # Convert keys from strings to integers
-        data = {int(k): v.encode('utf-8') for k, v in data.items()}
+        data = {int(k): v if isinstance(v, bytes) else v.encode('utf-8') for k, v in data.items()}
         return data
     @classmethod
     def from_files(cls, vocab_fn: str, merges_fn: str, special_tokens: List[str] = None):

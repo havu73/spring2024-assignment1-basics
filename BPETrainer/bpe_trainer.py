@@ -2,9 +2,10 @@ from collections import Counter
 from typing import List, Tuple, Dict
 from .Word import Word
 from .pair_count import PC
-
-
-
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))) # this is supposed to let the code know that some of the import path is outside of this folder
+from gpt2_bytes import common
 
 
 class BPETrainer:
@@ -49,7 +50,7 @@ class BPETrainer:
         Train the BPE model to get the vocab of size self.vocab_size
         '''
         if self.trained:
-            return self._convert_merges_to_bytes(self.merges), self._convert_vocab_to_bytes(self.vocab)
+            return BPETrainer._convert_vocab_to_bytes(vocab = self.vocab , special_tokens=self.special_tokens), BPETrainer._convert_merges_to_bytes(self.merges)
         # import pdb; pdb.set_trace()
         existing_vocab_len= len(self.special_tokens)+ 256
         while existing_vocab_len < self.max_vocab_size:
@@ -79,21 +80,26 @@ class BPETrainer:
         '''
         Save the trained BPE model to the specified paths
         '''
-        if not self.trained:
-            self.train()  # we do not need it to return the bytes, just need to form self.merges and self.vocab
+        vocab, merges = self.train()  # we do not need it to return the bytes, just need to form self.merges and self.vocab
+        # vocab is a dictionary: key: int[0. vocab_size], value: bytes of the character(s) that the integer corresponds to
+        # merges [Tuple(bytes, bytes)] --> list of merged pairs of characters
+        byte_to_char = common.gpt2_bytes_to_unicode()  # we have the correct mapping int --> bytes, but in order to print the mappings out into readable file,
+        # we use the gpt2's ways of mapping the 256 bytes into readable characters
         # write vocab into a json file, each line show the character, that the value is the integer corresponding to the character
-        import json
         with open(vocab_path, 'w') as f:
-            vocab_dict = BPETrainer._convert_vocab_to_str(vocab=self.vocab, special_tokens=self.special_tokens)
-            for key, value in vocab_dict.items():
-                f.write(f"{key} {value}\n")
+            for ind, byte in vocab.items():
+                value_to_print = ''.join([byte_to_char[b] for b in byte])
+                f.write(f"{ind} {value_to_print}\n")
         f.close()
         # write merges into a text file, each line is a pair of characters
         with open(merges_path, 'w') as f:
-            for merge in self.merges:
-                f.write(merge[0]+' '+merge[1]+'\n')
+            for merge in merges:
+                merge0 = ''.join([byte_to_char[b] for b in merge[0]])
+                merge1 = ''.join([byte_to_char[b] for b in merge[1]])
+                f.write(merge0+' '+merge1+'\n')
         f.close()
         return
+
 
     @staticmethod
     def _convert_vocab_to_str(vocab: List[str], special_tokens:List[str]=[]) -> Dict[int, str]:
