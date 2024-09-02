@@ -461,8 +461,9 @@ def run_gradient_clipping(parameters: Iterable[torch.nn.Parameter], max_l2_norm:
     Returns:
         None
     """
-    raise NotImplementedError
-
+    from functionals.gradient_clip import gradient_clip
+    gradient_clip(parameters, max_l2_norm)
+    return
 
 def get_adamw_cls() -> Type[torch.optim.Optimizer]:
     """
@@ -502,8 +503,10 @@ def run_get_lr_cosine_schedule(
     Returns:
         Learning rate at the given iteration under the specified schedule.
     """
-    raise NotImplementedError
-
+    from functionals.learning_rate import lr_cosine_schedule
+    # t, alpha_max, alpha_min, Tw, Tc
+    output = lr_cosine_schedule(it, max_learning_rate, min_learning_rate, warmup_iters, cosine_cycle_iters)
+    return output
 
 def run_save_checkpoint(
     model: torch.nn.Module,
@@ -620,6 +623,7 @@ def run_train_bpe(
     # train the BPE tokenizer
     bpe_train = BPETrainer(pretokens=pretokens, vocab_size=vocab_size, special_tokens=special_tokens)
     vocab, merges = bpe_train.train()
+    bpe_train.save_trained_BPE(vocab_path=kwargs['vocab_path'], merges_path=kwargs['merges_path'])
     return vocab, merges
 
 

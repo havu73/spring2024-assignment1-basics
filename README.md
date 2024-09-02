@@ -27,8 +27,8 @@ In this repository, I am trying to do the first homework for course [CS336 at St
     - FLOPS to run one backward pass: ~6.4E12
     - FLOPs to train all the model with given batch size and num epochs: 3.9E21 FLOPs
     - If I am still correct, it takes 488 days to train the model given a single A100 GPU.
-  - [ ] Cosine learning rate scheduler with warm-up
-  - [ ] Gradient clipping
+  - [x] Cosine learning rate scheduler with warm-up
+  - [x] Gradient clipping
 - [ ] Training loop. Implement
   - [ ] Training loop
   - [ ] Model checkpoint: ```save_checkpoint```, ```load_checkpoint``` functions

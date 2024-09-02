@@ -75,6 +75,32 @@ class BPETrainer:
         # vocab: Dict[int, bytes] --> dictionary of character index and unique characters in the document
         return BPETrainer._convert_vocab_to_bytes(vocab = self.vocab , special_tokens=self.special_tokens), BPETrainer._convert_merges_to_bytes(self.merges)
 
+    def save_trained_BPE(self, vocab_path: str, merges_path: str) -> None:
+        '''
+        Save the trained BPE model to the specified paths
+        '''
+        if not self.trained:
+            self.train()  # we do not need it to return the bytes, just need to form self.merges and self.vocab
+        # write vocab into a json file, each line show the character, that the value is the integer corresponding to the character
+        import json
+        with open(vocab_path, 'w') as f:
+            vocab_dict = BPETrainer._convert_vocab_to_str(vocab=self.vocab, special_tokens=self.special_tokens)
+            for key, value in vocab_dict.items():
+                f.write(f"{key} {value}\n")
+        f.close()
+        # write merges into a text file, each line is a pair of characters
+        with open(merges_path, 'w') as f:
+            for merge in self.merges:
+                f.write(merge[0]+' '+merge[1]+'\n')
+        f.close()
+        return
+
+    @staticmethod
+    def _convert_vocab_to_str(vocab: List[str], special_tokens:List[str]=[]) -> Dict[int, str]:
+        results = special_tokens + [chr(i) for i in range(256)] + vocab
+        results = {i: results[i] for i in range(len(results))}
+        return results
+
     @staticmethod
     def _convert_vocab_to_bytes(vocab: List[str], special_tokens:List[str]=[]) -> Dict[int, bytes]:
         results = [x.encode('utf-8') for x in special_tokens]

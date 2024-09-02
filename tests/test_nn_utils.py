@@ -76,7 +76,6 @@ def test_gradient_clipping():
     t1 = tuple(torch.nn.Parameter(torch.clone(t)) for t in tensors)
     # Test freezing one parameter.
     t1[-1].requires_grad_(False)
-
     loss = torch.cat(t1).sum()
     loss.backward()
     torch.nn.utils.clip_grad.clip_grad_norm_(t1, max_norm)
