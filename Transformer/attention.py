@@ -32,7 +32,7 @@ class ScaledDotProductAttention(nn.Module):
         scores = torch.matmul(Q, K_transposed) / torch.sqrt(torch.tensor(self.d_k).float()) # (bs1,..., bsN, seq_lenQ, seq_lenK)
         if mask is not None:
             mask = mask.to(scores.dtype) * -1e9 # (seq_lenQ, seq_lenK)
-            scores = scores + mask  #(bs1,..., bsN, seq_lenQ, seq_lenK)
+            scores = scores + mask  #(bs1,..., bsN, seq_lenQ, seq_lenK)  --> adding -inf to positions that we want to mask
         attention = softmax(scores, dim=-1) #(bs1,..., bsN, seq_lenQ, seq_lenK) such that the last dimension sums to 1
         return torch.matmul(attention, V)
 
@@ -55,18 +55,20 @@ class MultiHead(nn.Module):
         self.WO = nn.Linear(d_v*num_heads, d_model, bias=False)
         self.attention = ScaledDotProductAttention(d_k, d_v)
 
-    def forward(self, x: torch.Tensor, mask: torch.Tensor=None) -> torch.Tensor:
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         '''
         :param x: torch.Tensor: input tensor (bs1,..., bsN, seq_len, d_model)
-        :param mask: torch.Tensor: mask tensor (seq_len, seq_len)
+        :param mask: torch.Tensor: mask tensor (seq_len, seq_len). Mask = 1 means it is masked OUT
         :return: torch.Tensor: output tensor
         '''
         bs = x.size()[:-2]
         seq_len = x.size(-2)
+        mask = torch.tril(torch.ones(seq_len, seq_len)).to(torch.bool) # lower triangular matrix, corresponds to masking OUT the future tokens
+        mask = ~mask # this is important, we do not want to start with torch.triu because we want to mask OUT the future tokens, not the current ones
         Q = self.WQ(x).view(*bs, seq_len, self.num_heads, self.d_k).transpose(-3, -2)  # (bs, num_heads, seq_len, d_k)
         K = self.WK(x).view(*bs, seq_len, self.num_heads, self.d_k).transpose(-3, -2)
         V = self.WV(x).view(*bs, seq_len, self.num_heads, self.d_v).transpose(-3, -2)
-        output = self.attention(Q, K, V, mask).transpose(-3, -2).contiguous()  # bs, seq_len, num_heads, d_v)
+        output = self.attention(Q, K, V, mask=mask).transpose(-3, -2).contiguous()  # bs, seq_len, num_heads, d_v)
         output = output.view(*bs, seq_len, self.d_v*self.num_heads)  #(bs, seq_len, d_v*num_heads)
         return self.WO(output)
 

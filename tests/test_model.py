@@ -119,16 +119,17 @@ def test_multihead_self_attention_ha():
     # Define new weights for the query, key, value projections and output projection
     new_in_proj_weight = torch.ones((3 * embed_dim, embed_dim))  # (3 * embed_dim) x embed_dim
     new_in_proj_weight = torch.rand(new_in_proj_weight.shape).float()  # random values
-    # new_in_proj_weight[0*num_heads*d_k:1*(num_heads*d_k)] = torch.randint(0,10, new_in_proj_weight[0*num_heads*d_k:1*num_heads*d_k].shape)  # random values
     new_out_proj_weight = torch.rand((embed_dim, embed_dim))  # embed_dim x embed_dim
-    # new_out_proj_weight[:,1] = new_out_proj_weight[:,1] *2
     torch.set_printoptions(precision=3)
     # Assign new weights to the multi-head attention layer
     multihead_attn.in_proj_weight.data = new_in_proj_weight
     multihead_attn.out_proj.weight.data = new_out_proj_weight
 
-    in_features = torch.rand((8, 128, embed_dim))  # (batch_size, seq_len, embed_dim)
-    out_features, attention_weights = multihead_attn(in_features, in_features, in_features)
+    seq_len = 128
+    in_features = torch.rand((1, seq_len, embed_dim))  # (batch_size, seq_len, embed_dim)
+    causal_mask = torch.tril(torch.ones(seq_len, seq_len)).to(torch.bool)  # lower triangular mask
+    causal_mask = ~causal_mask  # mask out the future tokens (1 corresponds to masking OUT). This is important as compared to triu
+    out_features, attention_weights = multihead_attn(in_features, in_features, in_features, attn_mask=causal_mask)
     reference_weights = {}
     for i in range(num_heads):
         reference_weights[f"q_heads.{i}.weight"] = new_in_proj_weight[i * d_k : (i + 1) * d_k]
@@ -142,6 +143,7 @@ def test_multihead_self_attention_ha():
         weights=reference_weights,
         in_features=in_features,
     )
+    # import pdb; pdb.set_trace()
     numpy.testing.assert_allclose(out_features.detach().numpy(), actual_output.detach().numpy(), atol=1e-6, rtol=1e-06)
 
 def test_transformer_lm():
