@@ -42,8 +42,8 @@ def test_cross_entropy():
                 [0.8541, 0.1803, 0.2054, 0.4775, 0.8199],
             ],
         ]
-    )
-    targets = torch.tensor([[1, 0, 2, 2], [4, 1, 4, 0]])
+    )  ## (bs1, ..., bsN, vocab_size)
+    targets = torch.tensor([[1, 0, 2, 2], [4, 1, 4, 0]])  ## (bs1, ..., bsN)
     expected = F.cross_entropy(inputs.view(-1, inputs.size(-1)), targets.view(-1))
     numpy.testing.assert_allclose(
         run_cross_entropy(inputs.view(-1, inputs.size(-1)), targets.view(-1))

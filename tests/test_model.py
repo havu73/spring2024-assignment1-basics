@@ -202,7 +202,7 @@ def test_transformer_lm_truncated_input():
         residual_pdrop=residual_pdrop,
         weights=reference_weights,
         in_indices=in_indices_truncated,
-    )
+    ) # (bs1, ..., bsN, vocab_size)
     numpy.testing.assert_allclose(
         truncated_actual_output.detach().numpy(),
         truncated_expected_output.detach().numpy(),

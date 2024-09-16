@@ -1,6 +1,6 @@
 import torch
 
-def lr_cosine_schedule(t, alpha_max, alpha_min, Tw, Tc):
+def lr_cosine_schedule(t, alpha_max= 1, alpha_min= 0.1, Tw=7, Tc=21):  # default params values based on test_optimizer.py
     '''
     :param t: int: the current iteration
     :param alpha_max: float: the maximum learning rate

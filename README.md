@@ -31,8 +31,10 @@ In this repository, I am trying to do the first homework for course [CS336 at St
   - [x] Cosine learning rate scheduler with warm-up
   - [x] Gradient clipping
 - [ ] Training loop. Implement
-  - [ ] Training loop
-  - [ ] Model checkpoint: ```save_checkpoint```, ```load_checkpoint``` functions
+  - [x] Dataloader (not the dataloader object, but the function to load the data into tuple format with fixed sequence length)
+  - [x] Model checkpoint: ```save_checkpoint```, ```load_checkpoint``` functions
+  - [x] Encode data for training loop: ```tokenize_data.py```. My tokenizer is extremely slow. It is correct, but unacceptably slow.
+  - [x] Training loop
   - [ ] Run the training loop
 - [ ] Generate new texts from trained model
 - [ ] Experiments
