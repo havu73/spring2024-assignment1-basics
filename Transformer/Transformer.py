@@ -23,7 +23,7 @@ softmax(QK^T): 2 * seq_len * seq_len: getting the denom and also dividing each e
 then, QK^T * V: 2 * seq_len * seq_len * d_model (for QK^T * V)
 Given the specification of GPT-2XL, this will need: 22,439,526,400 FLOPs for just the matrix multiplications FOR ONE LAYER
 - FFN: 2 * seq_len* d_model * dff + 2 * seq_len * dff * d_model: for each x of seq_len multiply by W1, then W2. Each matrix*matrix multiplication costs 2*d_model*d_ff opeations
-- FC to convert from d_model to num_tokens multiply (seq_len, d_model) by (d_model, num_tokens): 2 * d_model * num_tokens * seq_len
+- FC to convert from d_model to vocab_size multiply (seq_len, d_model) by (d_model, vocab_size): 2 * d_model * vocab_size * seq_len
 If seq_len becomes 16384: 1,969,645,158,400 ~ 2 Trillion FLOPs FOR ONE LAYER
 '''
 
@@ -98,9 +98,9 @@ class TransformerBlock(nn.Module):
         return
 
 class TransformerLM(nn.Module):
-    def __init__(self, num_tokens, seq_len, d_model=1600, embed_pdrop=0, num_heads=25, d_ff=6400, attn_pdrop=0, residual_pdrop=0, num_layers=48):
+    def __init__(self, vocab_size, seq_len, d_model=1600, embed_pdrop=0, num_heads=25, d_ff=6400, attn_pdrop=0, residual_pdrop=0, num_layers=48):
         '''
-        :param num_tokens: int: the number of tokens in the vocabulary
+        :param vocab_size: int: the number of tokens in the vocabulary
         :param d_model: int: the number of features in the input tensor
         :param num_heads: int: the number of heads
         :param d_ff: int: the number of features in the feed-forward layer
@@ -110,10 +110,10 @@ class TransformerLM(nn.Module):
         '''
         super(TransformerLM, self).__init__()
         # 1. parameters and model components associated with the embedding of the tokens and positions
-        self.num_tokens = num_tokens  # vocab size
+        self.vocab_size = vocab_size  # vocab size
         self.seq_len = seq_len  # input sequence length
         self.d_model = d_model  # each token will be represented by a vector of size d_model, each position within seq_len will also be represented by a vector of size d_model
-        self.token_embed = nn.Embedding(num_tokens, d_model)  # nn.Embedding will be simply a matrix of size (num_tokens, d_model) --> each token is represented by a vector of size d_model, and this matrix is learnable
+        self.token_embed = nn.Embedding(vocab_size, d_model)  # nn.Embedding will be simply a matrix of size (vocab_size, d_model) --> each token is represented by a vector of size d_model, and this matrix is learnable
         self.position_embed = nn.Embedding(seq_len, d_model)  # nn.Embedding will be simply a matrix of size (seq_len, d_model) --> each position is represented by a vector of size d_model, and this matrix is learnable
         self.embed_dropout = nn.Dropout(embed_pdrop)
         # 2. Parameters and model components associated with ONE transformer block
@@ -124,7 +124,7 @@ class TransformerLM(nn.Module):
         self.num_layers = num_layers
         self.transformer_list = nn.ModuleList([TransformerBlock(d_model, num_heads, d_ff, attn_pdrop, residual_pdrop) for _ in range(num_layers)])
         self.ln = nn.LayerNorm(d_model, bias=False)  # LayerNorm will be a vector of size d_model, and parametersl beta and gamma will be learned
-        self.fc = nn.Linear(d_model, num_tokens, bias=False)
+        self.fc = nn.Linear(d_model, vocab_size, bias=False)
 
     def forward(self, x):
         '''
@@ -141,7 +141,7 @@ class TransformerLM(nn.Module):
         for transformer in self.transformer_list:
             x = transformer(x) # (bs, seq_len, d_model)
         x = self.ln(x)
-        x = self.fc(x)  # (bs, seq_len, num_tokens) --> for each token in the sequence, we will predict the probability of the next token
+        x = self.fc(x)  # (bs, seq_len, vocab_size) --> for each token in the sequence, we will predict the probability of the next token
         return x
 
     def load_state_dict_one_trans_layer(self, weights, layer_idx):
