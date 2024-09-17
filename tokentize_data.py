@@ -14,6 +14,10 @@ def load_key_value_file(file_path):
             token_int, str_val = line.strip().split()  # 10 ĉ then 10 is key, ĉ is value
             result_dict[str_val] = int(token_int)
     return result_dict
+
+def invert_dictionary(d):
+    return {v: k for k, v in d.items()}
+
 def get_tokenizer_from_vocab_merges_path(
     vocab_path: str | os.PathLike,
     merges_path: str | os.PathLike,
@@ -48,7 +52,6 @@ def get_tokenizer_from_vocab_merges_path(
             byte_encoded_special_token = special_token.encode("utf-8")
             if byte_encoded_special_token not in set(vocab.values()):
                 vocab[len(vocab)] = byte_encoded_special_token
-
     merges = [
         (
             bytes([gpt2_byte_decoder[token] for token in merge_token_1]),
@@ -56,7 +59,7 @@ def get_tokenizer_from_vocab_merges_path(
         )
         for merge_token_1, merge_token_2 in gpt2_bpe_merges
     ]
-    return Tokenizer(vocab, merges, special_tokens)
+    return vocab, merges #Tokenizer(vocab, merges, special_tokens)
 
 def tokenize_by_batch(input_fn, tokenizer, output_fn, buffer_size=10000):
     '''
@@ -72,7 +75,7 @@ def tokenize_by_batch(input_fn, tokenizer, output_fn, buffer_size=10000):
         tokenized_line = tokenizer.encode(line)
         buffer.extend(tokenized_line)
         if len(buffer) >= buffer_size:
-            array_to_save = np.array(buffer, dtype=np.int32)
+            array_to_save = np.array(buffer, dtype=np.unit16)
             np.save(outF, array_to_save)
             buffer.clear()
     if buffer:  # after the for loop, if there are still some tokens in the buffer, save them
